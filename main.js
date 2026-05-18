@@ -20,13 +20,16 @@ kaplay({
 
 // load fonts
 loadFont("comic", "/fonts/font_comic.otf");
-loadFont("journal", "/fonts/OldNewspaperTypes.ttf")
-loadFont("dogica", "/fonts/dogicapixel.ttf")
+loadFont("journal", "/fonts/OldNewspaperTypes.ttf");
+loadFont("dogica", "/fonts/dogicapixel.ttf");
 
 // load maps
 loadSprite('terrain_foot', '/assets/terrain_foot.png');
 loadSprite('foret_1', '/assets/foret_1.png');
 loadSprite('ville_1', '/assets/ville_1.png');
+
+// load interface
+loadSprite('point_quete', '/assets/point_quete.png');
 
 // load decors forêt
 loadSprite('arbre_1', '/assets/arbre_1.png');
@@ -67,18 +70,18 @@ loadSprite('fleur_bleue', '/assets/fleur_bleue.png',{
 });
 
 // load decors terrain de foot
-loadSprite('barriere_foot_gauche', '/assets/barriere_foot_gauche.png')
-loadSprite('barriere_foot_droite', '/assets/barriere_foot_droite.png')
-loadSprite('barriere_foot_haut', '/assets/barriere_foot_haut.png')
-loadSprite('barriere_foot_bas', '/assets/barriere_foot_bas.png')
-loadSprite('goal', '/assets/goal.png')
+loadSprite('barriere_foot_gauche', '/assets/barriere_foot_gauche.png');
+loadSprite('barriere_foot_droite', '/assets/barriere_foot_droite.png');
+loadSprite('barriere_foot_haut', '/assets/barriere_foot_haut.png');
+loadSprite('barriere_foot_bas', '/assets/barriere_foot_bas.png');
+loadSprite('goal', '/assets/goal.png');
 
 // load decors ville
-loadSprite('hopital_bat', '/assets/hopital_bat.png')
-loadSprite('ecole_bat', '/assets/ecole_bat.png')
+loadSprite('hopital_bat', '/assets/hopital_bat.png');
+loadSprite('ecole_bat', '/assets/ecole_bat.png');
 
 // load objets
-loadSprite('ballon_foot_animated', '/assets/ballon_foot_animated.png',{
+loadSprite('ballon_foot', '/assets/ballon_foot.png',{
     sliceX: 13,
     anims: {
         bounce: {
@@ -90,6 +93,7 @@ loadSprite('ballon_foot_animated', '/assets/ballon_foot_animated.png',{
 });
 loadSprite('plante_1', '/assets/plante_en_pot_1.png');
 loadSprite('boules_de_jonglage', '/assets/boules_de_jonglage.png');
+loadSprite('velo', '/assets/velo.png');
 
 // load sounds
 loadSound('bruit_pas', '/sounds/bruits_pas.mp3');
@@ -172,7 +176,7 @@ loadSprite('mela', '/assets/mela.png', {
             loop: true
         }
     }
-})
+});
 
 loadSprite('melo', '/assets/melo.png', {
     sliceX: 2,
@@ -184,7 +188,7 @@ loadSprite('melo', '/assets/melo.png', {
             loop: true
         }
     }
-})
+});
 
 loadSprite('oscar', '/assets/oscar.png', {
     sliceX: 2,
@@ -196,7 +200,22 @@ loadSprite('oscar', '/assets/oscar.png', {
             loop: true
         }
     }
-})
+});
+
+// variables
+let pseudo = ""
+let tuto_ballon = false
+let near = false
+let dialogueStage = 0
+let currentSpeaker = null
+let currentTag = null
+let currentMessages = []
+let zone_arrivee = null
+let nearball = false
+let boules_de_jonglage_pos_x = null
+let boules_de_jonglage_pos_y = null
+let velo_monte = false
+let tuto_inventaire = false
 
 // INVENTAIRE
 let inventoryOpen = false;
@@ -223,7 +242,10 @@ const slots = document.querySelectorAll(".slot");
 let currentSlot = 0;
 
 function addItem(spritePath){
-
+    if(!tuto_inventaire){
+        message("Appuyer sur 'I' pour afficher votre inventaire")
+    }
+    tuto_inventaire = true
     const img = document.createElement("img");
     img.src = spritePath;
 
@@ -255,20 +277,82 @@ function destroyCurrentMessages() {
     currentMessages.forEach((m) => destroy(m))
     currentMessages = []
 }
-// variables
-let pseudo = ""
-let tuto_ballon = false
-let near = false
-let dialogueStage = 0
-let currentSpeaker = null
-let currentTag = null
-let currentMessages = []
-let zone_arrivee = null
-let nearball = false
-let boules_de_jonglage_pos_x = null
-let boules_de_jonglage_pos_y = null
 
-// AFFICHER LIGNE DIALOGUE
+// afficher message
+function message(texte){
+    
+    // création fond noir
+    const fond = add([
+        rect(width(), height()),
+        pos(0, 0),
+        color(BLACK),
+        opacity(0.5),
+        animate(),
+        fixed(),
+        z(495),
+    ]);
+
+    // création messages
+    const message1 = add([text(texte, {
+        font: "journal"
+    }),
+    pos(center()),
+    scale(0.15),
+    anchor("center"),
+    color(BLACK),
+    opacity(1),
+    animate()
+    ]);
+    message1.z = 500
+    const message2 = add([text(texte, {
+        font: "journal"
+    }),
+    pos(message1.pos.x - 0.3, message1.pos.y - 0.3 ),
+    scale(0.15),
+    anchor("center"),
+    color(WHITE),
+    opacity(1),
+    animate()
+    ]);
+    message2.z = 500
+
+    // fade out
+    wait(3, () => {
+        message1.animate(
+            "opacity",
+            [1,0],
+            {
+                duration: 3,
+                easing: easings.linear,
+            }
+        );
+        message2.animate(
+            "opacity",
+            [1,0],
+            {
+                duration: 3,
+                easing: easings.linear,
+            }
+        );
+        fond.animate(
+            "opacity",
+            [0.5,0],
+            {
+                duration: 3,
+                easing: easings.linear,
+            }
+        );
+
+        wait(3, () => {
+            destroy(message1),
+            destroy(message2),
+            destroy(fond);
+        });
+    });
+
+}
+
+// afficher ligne dialogue
 function ftc_text_near(player, msg, speaker, tag) {
     destroyCurrentMessages()
     let currentText = "";
@@ -348,9 +432,11 @@ function ftc_text_near(player, msg, speaker, tag) {
 }
 
 // initialisation quetes
+let point_quete_boule = true
 let quete_boule = false
 let quete_boule_1 = false
 let quete_boule_2 = false
+let quete_boule_fin = false
 
 scene("foret_1",()=>{
     add([
@@ -580,6 +666,9 @@ scene("foret_1",()=>{
 // INTERACTIONS
     ELIE.onCollide("mela", (mela) => {
         if (!near) {
+            if(point_quete_boule){
+                point_quete.opacity = 0
+            }
             ftc_text_near(ELIE, "Appuyer sur 'E' pour intéragir", mela, "mela")
             dialogueStage = 1
         }
@@ -594,6 +683,9 @@ scene("foret_1",()=>{
 
     ELIE.onCollideEnd("mela", () => {
         destroyCurrentMessages()
+        if(point_quete_boule){
+                point_quete.opacity = 1
+            }
         near = false
         dialogueStage = 0
         currentSpeaker = null
@@ -616,10 +708,15 @@ scene("foret_1",()=>{
     })
 
     ELIE.onCollide("zone_droite", (zone_droite) => {
-        zone_arrivee = "gauche",
-        pas.stop(),
-        bruit_fond.stop(),
-        go("ville_1")
+        if(velo_monte){
+            zone_arrivee = "gauche",
+            pas.stop(),
+            bruit_fond.stop(),
+            go("ville_1")
+        }
+        else{
+            message("Il est plus prudent d'avoir un vélo pour se déplacer en ville")
+        }
     })
 
     ELIE.onCollide("boules_de_jonglage", (boules_de_jonglage) => {
@@ -655,6 +752,7 @@ scene("foret_1",()=>{
         if (near && dialogueStage === 2 && currentSpeaker === MELA && !quete_boule) {
             ftc_text_near(ELIE, "Tu parles pas ? Ok, c'est cool. \nSi tu veux bien, tu m'apporterais les \nboules de jonglage que j'ai oubliées \nde l'autre côté de la forêt ? Merci !", currentSpeaker, currentTag)
             dialogueStage = 3
+            point_quete_boule = false
             return
         }
         if (near && dialogueStage === 3 && currentSpeaker === MELA && !quete_boule) {
@@ -669,6 +767,7 @@ scene("foret_1",()=>{
             dialogueStage = 2
             if (MELA.curAnim() != "jongle_front") {
                 destroy(boules_de_jonglage)
+                destroy(point_quete)
                 MELA.play("jongle_front")
             }
             return
@@ -704,6 +803,7 @@ scene("foret_1",()=>{
             ftc_text_near(ELIE, "Elle a encore promis que je donnerais un jouet ? \nBon... si t'amènes ce ballon à mon pote, \npeut-être que je t'en donne un.", currentSpeaker, currentTag)
             dialogueStage = 4
             quete_boule_2 = true
+            addItem("/assets/ballon_foot_item.png")
             return
         }
         if (near && dialogueStage === 4 && currentSpeaker === MELO && quete_boule_1) {
@@ -737,9 +837,10 @@ scene("foret_1",()=>{
         opacity(0)
     ]);
 
-// objets amovibles
+// objets amovibles   
+    // boules de jonglage
     const boules_de_jonglage = add([
-        pos(170,20),
+        pos(167,87),
         sprite('boules_de_jonglage'),
         body(),
         anchor("bot"),
@@ -1171,6 +1272,24 @@ scene("foret_1",()=>{
         body({ isStatic: true }),
         'mela'
     ]);
+
+    const point_quete = MELA.add([
+        sprite('point_quete'),
+        pos(-1.5, -25),
+        scale(0.2),
+        animate({relative: true})
+    ])
+
+    if(!point_quete_boule){
+        point_quete.opacity = 0
+    }
+
+    point_quete.animate("pos", [vec2(0,0), vec2(0,-1.7)], {
+            duration: 0.8,
+            direction: "ping-pong",
+            loops: Infinity,
+    });
+
     MELA.z = MELA.pos.y
     if(!quete_boule){
         MELA.play("idle_front")
@@ -1346,13 +1465,13 @@ scene("terrain_foot",()=>{
             return
         }
 
-        const dir = ballon_foot_animated.pos.sub(ELIE.pos).unit()
+        const dir = ballon_foot.pos.sub(ELIE.pos).unit()
 
         const force = 100
 
-        ballon_foot_animated.applyImpulse(dir.scale(force))
+        ballon_foot.applyImpulse(dir.scale(force))
 
-        ballon_foot_animated.play("bounce")
+        ballon_foot.play("bounce")
 
         tuto_ballon = true    
     })
@@ -1571,20 +1690,23 @@ scene("terrain_foot",()=>{
 // objets amovibles
     
     // ballon de foot
-    const ballon_foot_animated = add([
-        pos(95,58),
-        sprite('ballon_foot_animated'),
+    const ballon_foot = add([
+        pos(36,44),
+        sprite('ballon_foot'),
         anchor("bot"),
         body(),
         area({
             shape: new Rect(vec2(), 7, 6)
         }),
-        'ballon_foot_animated'
+        'ballon_foot'
     ])
-    ballon_foot_animated.onUpdate(() => {
-        ballon_foot_animated.z = ballon_foot_animated.pos.y
-        ballon_foot_animated.vel = ballon_foot_animated.vel.scale(0.98)
+    ballon_foot.onUpdate(() => {
+        ballon_foot.z = ballon_foot.pos.y
+        ballon_foot.vel = ballon_foot.vel.scale(0.98)
     })
+    if(!quete_boule_fin){
+        ballon_foot.opacity = 0
+    }
 
 //personnages
 
@@ -1636,7 +1758,7 @@ scene("terrain_foot",()=>{
     onKeyPress("e", () => {
     // dialogues oscar
         if (near && dialogueStage === 1 && currentSpeaker === OSCAR && !quete_boule_2) {
-            let num = getRandomInt(2) 
+            let num = getRandomInt(3) 
             if (num === 0) {
                 ftc_text_near(ELIE, "Salut, je m'appelle Oscar.", currentSpeaker, currentTag)
             }
@@ -1644,12 +1766,18 @@ scene("terrain_foot",()=>{
             if (num === 1) {
                 ftc_text_near(ELIE, "T'aimes bien le foot ?", currentSpeaker, currentTag)
             }
+
+            if (num === 2) {
+                ftc_text_near(ELIE, "J'ai perdu mon ballon :(", currentSpeaker, currentTag)
+            }
             return
         }
 
         if (near && dialogueStage === 1 && currentSpeaker === OSCAR && quete_boule_2) {
             ftc_text_near(ELIE, "T'as trouvé mon ballon ! Merci beaucoup...", currentSpeaker, currentTag)
             dialogueStage = 2
+            quete_boule_fin = true
+            ballon_foot.opacity = 1
             return
         }
 
@@ -1667,27 +1795,27 @@ scene("terrain_foot",()=>{
             return
         }
 
-        if (near && dialogueStage === 4 && currentSpeaker === MELO && quete_boule) {
-            ftc_text_near(ELIE, "Appuyer sur 'E' pour intéragir", MELO, "melo")
+        if (near && dialogueStage === 4 && currentSpeaker === OSCAR && quete_boule) {
+            ftc_text_near(ELIE, "Appuyer sur 'E' pour intéragir", OSCAR, "oscar")
             dialogueStage = 1
         }
   
 
     })
 
-    ELIE.onCollide("ballon_foot_animated", (ballon) => {
+    ELIE.onCollide("ballon_foot", (ballon) => {
         nearball = true
         if(!tuto_ballon){
             if(!near){
-                ftc_text_near(ELIE, "Appuyer sur 'ESPACE' en poussant pour tirer", ballon, "ballon_foot_animated")
+                ftc_text_near(ELIE, "Appuyer sur 'ESPACE' en poussant pour tirer", ballon, "ballon_foot")
                 dialogueStage = 1
             }
         }
-        ballon_foot_animated.vel.x = 0
-        ballon_foot_animated.vel.y = 0
+        ballon_foot.vel.x = 0
+        ballon_foot.vel.y = 0
     })
 
-    ELIE.onCollideEnd("ballon_foot_animated", () => {
+    ELIE.onCollideEnd("ballon_foot", () => {
         nearball = false
         destroyCurrentMessages()
         near = false
@@ -1696,17 +1824,17 @@ scene("terrain_foot",()=>{
         currentTag = null
     })
 
-    ballon_foot_animated.onCollide("barriere_cote", () => {
-        ballon_foot_animated.vel.x = -ballon_foot_animated.vel.x
+    ballon_foot.onCollide("barriere_cote", () => {
+        ballon_foot.vel.x = -ballon_foot.vel.x
     })
-    ballon_foot_animated.onCollide("barriere_longueur", () => {
-        ballon_foot_animated.vel.y = -ballon_foot_animated.vel.y
+    ballon_foot.onCollide("barriere_longueur", () => {
+        ballon_foot.vel.y = -ballon_foot.vel.y
     })
-    ballon_foot_animated.onCollide("goal", () => {
-        ballon_foot_animated.vel.x = -ballon_foot_animated.vel.x
+    ballon_foot.onCollide("goal", () => {
+        ballon_foot.vel.x = -ballon_foot.vel.x
     })
-    ballon_foot_animated.onCollide("goalll", () => {
-        ballon_foot_animated.vel.x = -ballon_foot_animated.vel.x/5
+    ballon_foot.onCollide("goalll", () => {
+        ballon_foot.vel.x = -ballon_foot.vel.x/5
     })
     
 
@@ -1848,13 +1976,13 @@ scene("ville_1",()=>{
             return
         }
 
-        const dir = ballon_foot_animated.pos.sub(ELIE.pos).unit()
+        const dir = ballon_foot.pos.sub(ELIE.pos).unit()
 
         const force = 100
 
-        ballon_foot_animated.applyImpulse(dir.scale(force))
+        ballon_foot.applyImpulse(dir.scale(force))
 
-        ballon_foot_animated.play("bounce")
+        ballon_foot.play("bounce")
 
         tuto_ballon = true    
     })
