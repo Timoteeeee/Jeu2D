@@ -1691,7 +1691,7 @@ scene("terrain_foot",()=>{
     
     // ballon de foot
     const ballon_foot = add([
-        pos(36,44),
+        pos(0,44),
         sprite('ballon_foot'),
         anchor("bot"),
         body(),
@@ -1775,9 +1775,11 @@ scene("terrain_foot",()=>{
 
         if (near && dialogueStage === 1 && currentSpeaker === OSCAR && quete_boule_2) {
             ftc_text_near(ELIE, "T'as trouvé mon ballon ! Merci beaucoup...", currentSpeaker, currentTag)
+            removeItemBySprite("/assets/ballon_foot.png");
             dialogueStage = 2
             quete_boule_fin = true
             ballon_foot.opacity = 1
+            ballon_foot.pos.x = 36
             return
         }
 
@@ -1790,7 +1792,7 @@ scene("terrain_foot",()=>{
         }
 
         if (near && dialogueStage === 3 && currentSpeaker === OSCAR && quete_boule_2) {
-            ftc_text_near(ELIE, `${pseudo} ! C'est joli. Tu veux jouer avec moi ?`, currentSpeaker, currentTag)
+            ftc_text_near(ELIE, `${pseudo} ! C'est joli. Viens me voir si tu veux faire une partie.`, currentSpeaker, currentTag)
             dialogueStage = 4
             return
         }
