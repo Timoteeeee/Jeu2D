@@ -21,6 +21,7 @@ kaplay({
 // load fonts
 loadFont("comic", "/fonts/font_comic.otf");
 loadFont("journal", "/fonts/OldNewspaperTypes.ttf")
+loadFont("dogica", "/fonts/dogicapixel.ttf")
 
 // load maps
 loadSprite('terrain_foot', '/assets/terrain_foot.png');
@@ -92,7 +93,8 @@ loadSprite('boules_de_jonglage', '/assets/boules_de_jonglage.png');
 
 // load sounds
 loadSound('bruit_pas', '/sounds/bruits_pas.mp3');
-loadSound('musique_1', '/sounds/game_music_project.mp3')
+loadSound('musique_1', '/sounds/game_music_project.mp3');
+loadSound('oiseau_son', '/sounds/oiseau_son.mp3');
 
 // load personnages
 loadSprite('elie', '/assets/elie_1.png',{
@@ -196,13 +198,65 @@ loadSprite('oscar', '/assets/oscar.png', {
     }
 })
 
+// INVENTAIRE
+let inventoryOpen = false;
+
+const inventory = document.getElementById("inventory");
+
+document.addEventListener("keydown", function(event){
+
+    if(event.key.toLowerCase() === "i"){
+
+        inventoryOpen = !inventoryOpen;
+
+        if(inventoryOpen){
+            inventory.style.display = "block";
+        }
+        else{
+            inventory.style.display = "none";
+        }
+    }
+});
+
+const slots = document.querySelectorAll(".slot");
+
+let currentSlot = 0;
+
+function addItem(spritePath){
+
+    const img = document.createElement("img");
+    img.src = spritePath;
+
+    slots[currentSlot].appendChild(img);
+    currentSlot++;
+}
+
+function removeItemBySprite(spritePath){
+
+    for(let i = 0; i < slots.length; i++){
+
+        const img = slots[i].querySelector("img");
+
+        if(img && img.src.includes(spritePath)){
+
+            slots[i].innerHTML = "";
+            return; // stop après suppression
+        }
+    }
+}
+
 // INITIALISATION FONCTIONS
 // numeros aleatoires
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);
 }
 
+function destroyCurrentMessages() {
+    currentMessages.forEach((m) => destroy(m))
+    currentMessages = []
+}
 // variables
+let pseudo = ""
 let tuto_ballon = false
 let near = false
 let dialogueStage = 0
@@ -214,17 +268,12 @@ let nearball = false
 let boules_de_jonglage_pos_x = null
 let boules_de_jonglage_pos_y = null
 
-function destroyCurrentMessages() {
-    currentMessages.forEach((m) => destroy(m))
-    currentMessages = []
-}
-
 // AFFICHER LIGNE DIALOGUE
 function ftc_text_near(player, msg, speaker, tag) {
     destroyCurrentMessages()
     let currentText = "";
     let index = 0;
-    if(msg === "Appuyer sur 'E' pour intéragir" || msg === "Appuyer sur 'ESPACE' en poussant pour tirer") {
+    if(msg === "Appuyer sur 'E' pour intéragir" || msg === "Appuyer sur 'ESPACE' en poussant pour tirer" || msg === "Appuyer sur 'E' pour prendre") {
         currentText = msg;
     }
 
@@ -248,7 +297,7 @@ function ftc_text_near(player, msg, speaker, tag) {
     message1.z = 200
     message2.z = 200
 // animation texte interaction
-    if(msg === "Appuyer sur 'E' pour intéragir" || msg === "Appuyer sur 'ESPACE' en poussant pour tirer") {
+    if(msg === "Appuyer sur 'E' pour intéragir" || msg === "Appuyer sur 'ESPACE' en poussant pour tirer" || msg === "Appuyer sur 'E' pour prendre") {
         message1.animate("pos", [vec2(0,0), vec2(0,-1.7)], {
             duration: 0.8,
             direction: "ping-pong",
@@ -275,7 +324,7 @@ function ftc_text_near(player, msg, speaker, tag) {
     currentTag = tag
 
 // animation texte dialogue
-    if(msg != "Appuyer sur 'E' pour intéragir" && msg != "Appuyer sur 'ESPACE' en poussant pour tirer") {
+    if(msg != "Appuyer sur 'E' pour intéragir" && msg != "Appuyer sur 'ESPACE' en poussant pour tirer" && msg != "Appuyer sur 'E' pour prendre") {
         const stopLoop = loop(0.03, () => {
             if (index < msg.length) {
                 onKeyPress('space', () => {
@@ -300,16 +349,18 @@ function ftc_text_near(player, msg, speaker, tag) {
 
 // initialisation quetes
 let quete_boule = false
+let quete_boule_1 = false
+let quete_boule_2 = false
 
 scene("foret_1",()=>{
     add([
         sprite('foret_1'),
     ]);
 
-    //const musique = play("musique_1", {
-    //    volume: 0.5,
-    //    loop: true
-    //})
+    const bruit_fond = play("oiseau_son", {
+        volume: 1,
+        loop: true
+    })
 
     
 // INITIALISATION ET MOUVEMENTS ELIE
@@ -449,6 +500,7 @@ scene("foret_1",()=>{
 // sons de pas
     let bool_pas = false
     const pas = play("bruit_pas", {
+        volume: 0.15,
         loop: true
     }
     )
@@ -559,17 +611,42 @@ scene("foret_1",()=>{
     ELIE.onCollide("zone_gauche", (zone_gauche) => {
         zone_arrivee = "droite",
         pas.stop(),
+        bruit_fond.stop(),
         go("terrain_foot")
     })
 
     ELIE.onCollide("zone_droite", (zone_droite) => {
         zone_arrivee = "gauche",
         pas.stop(),
+        bruit_fond.stop(),
         go("ville_1")
     })
 
+    ELIE.onCollide("boules_de_jonglage", (boules_de_jonglage) => {
+        if (!near) {
+            ftc_text_near(ELIE, "Appuyer sur 'E' pour prendre", boules_de_jonglage, "boules_de_jonglage")
+            dialogueStage = 1
+        }
+    })
+
+    ELIE.onCollideEnd("boules_de_jonglage", () => {
+        destroyCurrentMessages()
+        near = false
+        dialogueStage = 0
+        currentSpeaker = null
+        currentTag = null
+    })
+
     onKeyPress("e", () => {
-    // dialogues mela
+        // prendre boules
+        if (near && dialogueStage === 1 && currentSpeaker === boules_de_jonglage) {
+            destroy(boules_de_jonglage)
+            quete_boule = true
+            addItem("/assets/boules_de_jonglage.png")
+            return
+        }
+    
+        // dialogues mela
         if (near && dialogueStage === 1 && currentSpeaker === MELA && !quete_boule) {
             ftc_text_near(ELIE, "Salut ! Je m'appelle Mela.\nTu pourrais me rendre \nun service s'il te plaît ?", currentSpeaker, currentTag)
             dialogueStage = 2
@@ -587,6 +664,8 @@ scene("foret_1",()=>{
         }
         if (near && dialogueStage === 1 && currentSpeaker === MELA  && quete_boule) {
             ftc_text_near(ELIE, "Merci ! J'adore jongler. \nJ'ai rien pour te remercier, mais \ntu peux aller voir mon grand frère, \nil te donnera un jouet !", currentSpeaker, currentTag)
+            removeItemBySprite("/assets/boules_de_jonglage.png");
+            quete_boule_1 = true
             dialogueStage = 2
             if (MELA.curAnim() != "jongle_front") {
                 destroy(boules_de_jonglage)
@@ -600,7 +679,7 @@ scene("foret_1",()=>{
         }
 
     // dialogues melo
-        if (near && dialogueStage === 1 && currentSpeaker === MELO && !quete_boule) {
+        if (near && dialogueStage === 1 && currentSpeaker === MELO && !quete_boule_1) {
             let num = getRandomInt(2) 
             if (num === 0) {
                 ftc_text_near(ELIE, "Je t'ai rien demandé.", currentSpeaker, currentTag)
@@ -611,27 +690,28 @@ scene("foret_1",()=>{
             }
             return
         }
-        if (near && dialogueStage === 1 && currentSpeaker === MELO && quete_boule) {
+        if (near && dialogueStage === 1 && currentSpeaker === MELO && quete_boule_1) {
             ftc_text_near(ELIE, "T'as aidé ma soeur. C'est cool.", currentSpeaker, currentTag)
             dialogueStage = 2
             return
         }
-        if (near && dialogueStage === 2 && currentSpeaker === MELO && quete_boule) {
+        if (near && dialogueStage === 2 && currentSpeaker === MELO && quete_boule_1) {
             ftc_text_near(ELIE, "Pourquoi tu me regardes comme ça ? \nTu veux ma photo ?", currentSpeaker, currentTag)
             dialogueStage = 3
             return
         }
-        if (near && dialogueStage === 3 && currentSpeaker === MELO && quete_boule) {
+        if (near && dialogueStage === 3 && currentSpeaker === MELO && quete_boule_1) {
             ftc_text_near(ELIE, "Elle a encore promis que je donnerais un jouet ? \nBon... si t'amènes ce ballon à mon pote, \npeut-être que je t'en donne un.", currentSpeaker, currentTag)
             dialogueStage = 4
+            quete_boule_2 = true
             return
         }
-        if (near && dialogueStage === 4 && currentSpeaker === MELO && quete_boule) {
+        if (near && dialogueStage === 4 && currentSpeaker === MELO && quete_boule_1) {
             ftc_text_near(ELIE, "Il a un pull gris. Et pas de cheveux.", currentSpeaker, currentTag)
             dialogueStage = 5
             return
         }
-        if (near && dialogueStage === 5 && currentSpeaker === MELO && quete_boule) {
+        if (near && dialogueStage === 5 && currentSpeaker === MELO && quete_boule_1) {
             ftc_text_near(ELIE, "Appuyer sur 'E' pour intéragir", MELO, "melo")
             dialogueStage = 1
         }
@@ -678,9 +758,6 @@ scene("foret_1",()=>{
         boules_de_jonglage.z = boules_de_jonglage.pos.y
         boules_de_jonglage_pos_x = boules_de_jonglage.pos.x
         boules_de_jonglage_pos_y = boules_de_jonglage.pos.y
-    })
-    boules_de_jonglage.onCollide("mela", (mela) => {
-        quete_boule = true
     })
     if(quete_boule){
         destroy(boules_de_jonglage)
@@ -1137,12 +1214,6 @@ scene("terrain_foot",()=>{
     add([
         sprite('terrain_foot'),
     ]);
-
-    //const musique = play("musique_1", {
-    //    volume: 0.5,
-    //    loop: true
-    //})
-
     
 // INITIALISATION ET MOUVEMENTS ELIE
     const ELIE = add([
@@ -1289,6 +1360,7 @@ scene("terrain_foot",()=>{
 // sons de pas
     let bool_pas = false
     const pas = play("bruit_pas", {
+        volume: 0.15,
         loop: true
     }
     )
@@ -1546,8 +1618,60 @@ scene("terrain_foot",()=>{
         go("foret_1")
     })
 
+    ELIE.onCollide("oscar", (oscar) => {
+        if (!near) {
+            ftc_text_near(ELIE, "Appuyer sur 'E' pour intéragir", oscar, "oscar")
+            dialogueStage = 1
+        }
+    })
+
+    ELIE.onCollideEnd("oscar", () => {
+        destroyCurrentMessages()
+        near = false
+        dialogueStage = 0
+        currentSpeaker = null
+        currentTag = null
+    })
+
     onKeyPress("e", () => {
-        // dialogues
+    // dialogues oscar
+        if (near && dialogueStage === 1 && currentSpeaker === OSCAR && !quete_boule_2) {
+            let num = getRandomInt(2) 
+            if (num === 0) {
+                ftc_text_near(ELIE, "Salut, je m'appelle Oscar.", currentSpeaker, currentTag)
+            }
+
+            if (num === 1) {
+                ftc_text_near(ELIE, "T'aimes bien le foot ?", currentSpeaker, currentTag)
+            }
+            return
+        }
+
+        if (near && dialogueStage === 1 && currentSpeaker === OSCAR && quete_boule_2) {
+            ftc_text_near(ELIE, "T'as trouvé mon ballon ! Merci beaucoup...", currentSpeaker, currentTag)
+            dialogueStage = 2
+            return
+        }
+
+        if (near && dialogueStage === 2 && currentSpeaker === OSCAR && quete_boule_2) {
+            pseudo = prompt("Choisissez votre nom :");
+            if (pseudo != null && pseudo !== ""){
+                dialogueStage = 3
+            }
+            return
+        }
+
+        if (near && dialogueStage === 3 && currentSpeaker === OSCAR && quete_boule_2) {
+            ftc_text_near(ELIE, `${pseudo} ! C'est joli. Tu veux jouer avec moi ?`, currentSpeaker, currentTag)
+            dialogueStage = 4
+            return
+        }
+
+        if (near && dialogueStage === 4 && currentSpeaker === MELO && quete_boule) {
+            ftc_text_near(ELIE, "Appuyer sur 'E' pour intéragir", MELO, "melo")
+            dialogueStage = 1
+        }
+  
 
     })
 
@@ -1738,6 +1862,7 @@ scene("ville_1",()=>{
 // sons de pas
     let bool_pas = false
     const pas = play("bruit_pas", {
+        volume: 0.15,
         loop: true
     }
     )
