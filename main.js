@@ -75,6 +75,16 @@ loadSprite('barriere_foot_droite', '/assets/barriere_foot_droite.png');
 loadSprite('barriere_foot_haut', '/assets/barriere_foot_haut.png');
 loadSprite('barriere_foot_bas', '/assets/barriere_foot_bas.png');
 loadSprite('goal', '/assets/goal.png');
+loadSprite('goal_anim', '/assets/goal_anim.png',{
+    sliceX: 8,
+    anims: {
+        confettis: {
+            from: 0,
+            to: 7,
+            speed: 10
+        }
+    }
+})
 
 // load decors ville
 loadSprite('hopital_bat', '/assets/hopital_bat.png');
@@ -99,6 +109,8 @@ loadSprite('velo', '/assets/velo.png');
 loadSound('bruit_pas', '/sounds/bruits_pas.mp3');
 loadSound('musique_1', '/sounds/game_music_project.mp3');
 loadSound('oiseau_son', '/sounds/oiseau_son.mp3');
+loadSound('son_defaite', '/sounds/son_defaite.mp3');
+loadSound('son_victoire', '/sounds/son_victoire.mp3');
 
 // load personnages
 loadSprite('elie', '/assets/elie_1.png',{
@@ -216,6 +228,12 @@ let boules_de_jonglage_pos_x = null
 let boules_de_jonglage_pos_y = null
 let velo_monte = false
 let tuto_inventaire = false
+let score_foot = [0, 0]
+let bool_pas = false
+    const pas = play("bruit_pas", {
+        volume: 0.15,
+        loop: true
+    })
 
 // INVENTAIRE
 let inventoryOpen = false;
@@ -585,12 +603,6 @@ scene("foret_1",()=>{
     })
 
 // sons de pas
-    let bool_pas = false
-    const pas = play("bruit_pas", {
-        volume: 0.15,
-        loop: true
-    }
-    )
     pas.stop()
 
     function isAnyMovementKeyDown() {
@@ -1476,12 +1488,6 @@ scene("terrain_foot",()=>{
     })
 
 // sons de pas
-    let bool_pas = false
-    const pas = play("bruit_pas", {
-        volume: 0.15,
-        loop: true
-    }
-    )
     pas.stop()
 
     function isAnyMovementKeyDown() {
@@ -1849,6 +1855,10 @@ scene("partie_foot",()=>{
     add([
         sprite('terrain_foot'),
     ]);
+
+// INITIALISATION VARIABLE SPECIFIQUE
+    let var_goal = false
+    nearball = false
     
 // INITIALISATION ET MOUVEMENTS ELIE
     const ELIE = add([
@@ -1993,12 +2003,6 @@ scene("partie_foot",()=>{
     })
 
 // sons de pas
-    let bool_pas = false
-    const pas = play("bruit_pas", {
-        volume: 0.15,
-        loop: true
-    }
-    )
     pas.stop()
 
     function isAnyMovementKeyDown() {
@@ -2127,6 +2131,13 @@ scene("partie_foot",()=>{
     ])
     goal_gauche.z = goal_gauche.pos.y
 
+    const confettis_gauche = goal_gauche.add([
+            sprite('goal_anim'),
+            anchor("center"),
+            pos(0,-20)
+    ])
+
+
     const goal_gauche_hitbox1 = add([
         pos(15, 69),
         anchor("bot"),
@@ -2144,7 +2155,7 @@ scene("partie_foot",()=>{
             shape: new Rect(vec2(-2, 0), 1, 25)
         }),
         body({isStatic: true}),
-        "goalll"
+        "goalll_gauche"
     ])
 
     const goal_gauche_hitbox3 = add([
@@ -2166,6 +2177,13 @@ scene("partie_foot",()=>{
     goal_droite.z = goal_droite.pos.y
     goal_droite.flipX = true
 
+    const confettis_droite = goal_droite.add([
+            sprite('goal_anim'),
+            anchor("center"),
+            pos(0,-20)
+    ])
+    confettis_droite.flipX = true
+
     const goal_droite_hitbox1 = add([
         pos(178, 68),
         anchor("bot"),
@@ -2183,7 +2201,7 @@ scene("partie_foot",()=>{
             shape: new Rect(vec2(2, 0), 1, 25)
         }),
         body({isStatic: true}),
-        "goalll"
+        "goalll_droite"
     ])
 
     const goal_droite_hitbox3 = add([
@@ -2239,81 +2257,7 @@ scene("partie_foot",()=>{
     
 
 // collisions
-    ELIE.onCollide("zone_droite", (zone_droite) => {
-        zone_arrivee = "gauche",
-        pas.stop(),
-        go("foret_1")
-    })
-
-    ELIE.onCollide("oscar", (oscar) => {
-        if (!near) {
-            ftc_text_near(ELIE, "Appuyer sur 'E' pour intéragir", oscar, "oscar")
-            dialogueStage = 1
-        }
-    })
-
-    ELIE.onCollideEnd("oscar", () => {
-        destroyCurrentMessages()
-        near = false
-        dialogueStage = 0
-        currentSpeaker = null
-        currentTag = null
-    })
-
-    onKeyPress("e", () => {
-    // dialogues oscar
-        if (near && dialogueStage === 1 && currentSpeaker === OSCAR && !quete_boule_2 && !partie_foot) {
-            let num = getRandomInt(3) 
-            if (num === 0) {
-                ftc_text_near(ELIE, "Salut, je m'appelle Oscar.", currentSpeaker, currentTag)
-            }
-
-            if (num === 1) {
-                ftc_text_near(ELIE, "T'aimes bien le foot ?", currentSpeaker, currentTag)
-            }
-
-            if (num === 2) {
-                ftc_text_near(ELIE, "J'ai perdu mon ballon :(", currentSpeaker, currentTag)
-            }
-            return
-        }
-
-        if (near && dialogueStage === 1 && currentSpeaker === OSCAR && quete_boule_2 && !partie_foot) {
-            ftc_text_near(ELIE, "T'as trouvé mon ballon ! Merci beaucoup...", currentSpeaker, currentTag)
-            removeItemBySprite("/assets/ballon_foot.png");
-            dialogueStage = 2
-            quete_boule_fin = true
-            ballon_foot.opacity = 1
-            ballon_foot.pos.x = 36
-            return
-        }
-
-        if (near && dialogueStage === 2 && currentSpeaker === OSCAR && quete_boule_2 && !partie_foot) {
-            pseudo = prompt("Choisissez votre nom :");
-            if (pseudo != null && pseudo !== ""){
-                dialogueStage = 3
-            }
-            return
-        }
-
-        if (near && dialogueStage === 3 && currentSpeaker === OSCAR && quete_boule_2 && !partie_foot) {
-            ftc_text_near(ELIE, `${pseudo}. C'est joli ! Viens me voir si tu veux faire une partie.`, currentSpeaker, currentTag)
-            dialogueStage = 4
-            return
-        }
-
-        if (near && dialogueStage === 4 && currentSpeaker === OSCAR && quete_boule_2 && !partie_foot) {
-            ftc_text_near(ELIE, "Appuyer sur 'E' pour intéragir", OSCAR, "oscar")
-            dialogueStage = 1
-        }
-
-        if (near && dialogueStage === 1 && currentSpeaker === OSCAR && partie_foot) {
-            ftc_text_near(ELIE, "Tu veux jouer ? C'est parti !", currentSpeaker, currentTag)
-            go("partie_foot")
-            return
-        }
-    })
-
+    
     // collisions ballon
     ELIE.onCollide("ballon_foot", (ballon) => {
         nearball = true
@@ -2345,14 +2289,63 @@ scene("partie_foot",()=>{
     ballon_foot.onCollide("goal", () => {
         ballon_foot.vel.x = -ballon_foot.vel.x
     })
-    ballon_foot.onCollide("goalll", () => {
+    ballon_foot.onCollide("goalll_gauche", () => {
         ballon_foot.vel.x = -ballon_foot.vel.x/5
+        if(!var_goal){
+            confettis_gauche.play("confettis")
+            play("son_defaite", {
+                volume: 0.3
+            })
+            score_foot[1] = score_foot[1] + 1
+            var_goal = true
+            wait(2.5, () => {
+                go("partie_foot")
+            })
+        }
+    })
+    ballon_foot.onCollide("goalll_droite", () => {
+        ballon_foot.vel.x = -ballon_foot.vel.x/5
+        if(!var_goal){
+            confettis_droite.play("confettis")
+            play("son_victoire", {
+                volume: 0.3
+            })
+            score_foot[0] = score_foot[0] + 1
+            var_goal = true
+            wait(2.5, () => {
+                go("partie_foot")
+            })
+        }
     })
 
     // messages partie
-    message("Trois, deux, un, FEU !", 3)
-    
+    message("Trois, deux, un, C'EST PARTI !", 3)
 
+    const score_1 = add([text(`Tim: ${score_foot[0]} | Oscar: ${score_foot[1]}`, {
+        font: "journal",
+    }),
+    scale(0.2),
+    color(BLACK),
+    pos(3,3)
+    ])
+    score_1.z = 400
+
+    const score_2 = add([text(`Tim: ${score_foot[0]} | Oscar: ${score_foot[1]}`, {
+        font: "journal",
+    }),
+    scale(0.2),
+    color(WHITE),
+    pos(3.3,2.7)
+    ])
+    score_2.z = 400
+
+    const score_background = add([
+        rect(61,9),
+        pos(2,2),
+        color(BLACK),
+        opacity(0.4)
+    ])
+    score_background.z = 350
 })
 
 scene("ville_1",()=>{
@@ -2503,12 +2496,6 @@ scene("ville_1",()=>{
     })
 
 // sons de pas
-    let bool_pas = false
-    const pas = play("bruit_pas", {
-        volume: 0.15,
-        loop: true
-    }
-    )
     pas.stop()
 
     function isAnyMovementKeyDown() {
