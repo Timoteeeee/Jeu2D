@@ -109,7 +109,7 @@ loadSprite('velo', '/assets/velo.png',{
         roule: {
             from: 0,
             to: 2,
-            speed: 5
+            speed: 10
         }
     }
 });
@@ -175,6 +175,11 @@ loadSprite('elie', '/assets/elie_1.png',{
         kick_behind: {
             from: 21,
             to: 21,
+            speed: 4
+        },
+        velo: {
+            from:28,
+            to:28,
             speed: 4
         }
     }
@@ -290,6 +295,8 @@ const pas = play("bruit_pas", {
         loop: true
 })
 let tuto_deplacement = false
+let savoir_velo = true
+let velo
 
 // INVENTAIRE
 let inventoryOpen = false;
@@ -515,8 +522,6 @@ let quete_boule_fin = false
 let partie_foot = false
 
 // message tuto
-message("Appuyer sur 'w' 'a' 's' 'd' pour vour déplacer", 3)
-
 scene("foret_1",()=>{
     add([
         sprite('foret_1'),
@@ -560,97 +565,211 @@ scene("foret_1",()=>{
 
 // mouvements
     onKeyDown("right", () => {
-        ELIE.move(25, 0);
-        if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side"){
-            ELIE.flipX = true;
-            ELIE.play("walk_side");
+        if(!velo_monte){
+            ELIE.move(25, 0);
+            if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side"){
+                ELIE.flipX = true;
+                ELIE.play("walk_side");
+            }
+        }
+
+        if(velo_monte){
+            ELIE.move(40, 0);
+            if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side" && ELIE.velo_utilise.curAnim() != "roule"){
+                ELIE.flipX = true;
+                ELIE.velo_utilise.flipX = false;
+                ELIE.play("velo");
+                ELIE.velo_utilise.play("roule");
+            }
         }
     });
 
     onKeyRelease("right", ()=>{
-        ELIE.play("idle_side")
+        if(!velo_monte){
+            ELIE.play("idle_side")
+        }
     })
 
-
     onKeyDown("down", () => {
-        ELIE.move(0, 25);
-        if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side"){
-            ELIE.play("walk_front");
+        if(!velo_monte){
+            ELIE.move(0, 25);
+            if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side"){
+                ELIE.flipX = false;
+                ELIE.play("walk_front");
+            }
+        }
+
+        if(velo_monte){
+            ELIE.move(0, 40);
+            if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side" && ELIE.velo_utilise.curAnim() != "roule"){
+                ELIE.flipX = false;
+                ELIE.velo_utilise.flipX = true;
+                ELIE.play("velo");
+                ELIE.velo_utilise.play("roule");
+            }
         }
     });
 
     onKeyRelease("down", ()=>{
-        ELIE.play("idle_front")
+        if(!velo_monte){
+            ELIE.play("idle_front")
+        }
     })
 
     onKeyDown("up", () => {
-        ELIE.move(0, -25);
-        if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side"){
-            ELIE.play("walk_behind");
+        if(!velo_monte){
+            ELIE.move(0, -25);
+            if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side"){
+                ELIE.flipX = true;
+                ELIE.play("walk_behind");
+            }
+        }
+
+        if(velo_monte){
+            ELIE.move(0, -40);
+            if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side" && ELIE.velo_utilise.curAnim() != "roule"){
+                ELIE.flipX = true;
+                ELIE.velo_utilise.flipX = false;
+                ELIE.play("velo");
+                ELIE.velo_utilise.play("roule");
+            }
         }
     });
 
     onKeyRelease("up", ()=>{
-        ELIE.play("idle_behind")
+        if(!velo_monte){
+            ELIE.play("idle_behind")
+        }
     })
 
     onKeyDown("left", () => {
-        ELIE.move(-25, 0);
-        if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side"){
-            ELIE.flipX = false;
-            ELIE.play("walk_side");
+        if(!velo_monte){
+            ELIE.move(-25, 0);
+            if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side"){
+                ELIE.flipX = false;
+                ELIE.play("walk_side");
+            }
+        }
+
+        if(velo_monte){
+            ELIE.move(-40, 0);
+            if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side" && ELIE.velo_utilise.curAnim() != "roule"){
+                ELIE.flipX = false;
+                ELIE.velo_utilise.flipX = true;
+                ELIE.play("velo");
+                ELIE.velo_utilise.play("roule");
+            }
         }
     });
 
     onKeyRelease("left", ()=>{
-        ELIE.play("idle_side")
+        if(!velo_monte){
+            ELIE.play("idle_side")
+        }
     })
 
     onKeyDown("d", () => {
-        ELIE.move(25, 0);
-        if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side"){
-            ELIE.flipX = true;
-            ELIE.play("walk_side");
+        if(!velo_monte){
+            ELIE.move(25, 0);
+            if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side"){
+                ELIE.flipX = true;
+                ELIE.play("walk_side");
+            }
+        }
+
+        if(velo_monte){
+            ELIE.move(40, 0);
+            if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side" && ELIE.velo_utilise.curAnim() != "roule"){
+                ELIE.flipX = true;
+                ELIE.velo_utilise.flipX = false;
+                ELIE.play("velo");
+                ELIE.velo_utilise.play("roule");
+            }
         }
     });
 
     onKeyRelease("d", ()=>{
-        ELIE.play("idle_side")
+        if(!velo_monte){
+            ELIE.play("idle_side")
+        }
     })
 
-
     onKeyDown("s", () => {
-        ELIE.move(0, 25);
-        if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side"){
-            ELIE.play("walk_front");
+        if(!velo_monte){
+            ELIE.move(0, 25);
+            if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side"){
+                ELIE.flipX = false;
+                ELIE.play("walk_front");
+            }
+        }
+
+        if(velo_monte){
+            ELIE.move(0, 40);
+            if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side" && ELIE.velo_utilise.curAnim() != "roule"){
+                ELIE.flipX = false;
+                ELIE.velo_utilise.flipX = true;
+                ELIE.play("velo");
+                ELIE.velo_utilise.play("roule");
+            }
         }
     });
 
     onKeyRelease("s", ()=>{
-        ELIE.play("idle_front")
+        if(!velo_monte){
+            ELIE.play("idle_front")
+        }
     })
 
     onKeyDown("w", () => {
-        ELIE.move(0, -25);
-        if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side"){
-            ELIE.play("walk_behind");
+        if(!velo_monte){
+            ELIE.move(0, -25);
+            if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side"){
+                ELIE.flipX = true;
+                ELIE.play("walk_behind");
+            }
+        }
+
+        if(velo_monte){
+            ELIE.move(0, -40);
+            if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side" && ELIE.velo_utilise.curAnim() != "roule"){
+                ELIE.flipX = true;
+                ELIE.velo_utilise.flipX = false;
+                ELIE.play("velo");
+                ELIE.velo_utilise.play("roule");
+            }
         }
     });
 
     onKeyRelease("w", ()=>{
-        ELIE.play("idle_behind")
+        if(!velo_monte){
+            ELIE.play("idle_behind")
+        }
     })
 
     onKeyDown("a", () => {
-        ELIE.move(-25, 0);
-        if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side"){
-            ELIE.flipX = false;
-            ELIE.play("walk_side");
+        if(!velo_monte){
+            ELIE.move(-25, 0);
+            if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side"){
+                ELIE.flipX = false;
+                ELIE.play("walk_side");
+            }
+        }
+
+        if(velo_monte){
+            ELIE.move(-40, 0);
+            if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side" && ELIE.velo_utilise.curAnim() != "roule"){
+                ELIE.flipX = false;
+                ELIE.velo_utilise.flipX = true;
+                ELIE.play("velo");
+                ELIE.velo_utilise.play("roule");
+            }
         }
     });
 
     onKeyRelease("a", ()=>{
-        ELIE.play("idle_side")
+        if(!velo_monte){
+            ELIE.play("idle_side")
+        }
     })
 
 // coup de pied
@@ -740,6 +859,11 @@ scene("foret_1",()=>{
 
     ELIE.onUpdate(() => {
         ELIE.z = ELIE.pos.y
+
+        if(ELIE.velo_utilise) {
+            ELIE.velo_utilise.pos.x = ELIE.pos.x + 2
+            ELIE.velo_utilise.pos.y = ELIE.pos.y + 8
+        }
     })
 
 // INTERACTIONS
@@ -813,91 +937,144 @@ scene("foret_1",()=>{
         currentTag = null
     })
 
+    ELIE.onCollide("velo", (velo) => {
+        if (!near) {
+            ftc_text_near(ELIE, "Appuyer sur 'E' pour intéragir", velo, "velo")
+            dialogueStage = 1
+        }
+    })
+
+    ELIE.onCollideEnd("velo", () => {
+        destroyCurrentMessages()
+        near = false
+        dialogueStage = 0
+        currentSpeaker = null
+        currentTag = null
+    })
+
     onKeyPress("e", () => {
-        // prendre boules
-        if (near && dialogueStage === 1 && currentSpeaker === boules_de_jonglage) {
-            destroy(boules_de_jonglage)
-            quete_boule = true
-            addItem("/assets/boules_de_jonglage.png")
-            return
-        }
-    
-        // dialogues mela
-        if (near && dialogueStage === 1 && currentSpeaker === MELA && !quete_boule) {
-            ftc_text_near(ELIE, "Salut ! Je m'appelle Mela.\nTu pourrais me rendre \nun service s'il te plaît ?", currentSpeaker, currentTag)
-            dialogueStage = 2
-            return
-        }
-        if (near && dialogueStage === 2 && currentSpeaker === MELA && !quete_boule) {
-            ftc_text_near(ELIE, "Tu parles pas ? Ok, c'est cool. \nSi tu veux bien, tu m'apporterais les \nboules de jonglage que j'ai oubliées \nde l'autre côté de la forêt ? Merci !", currentSpeaker, currentTag)
-            dialogueStage = 3
-            point_quete_boule = false
-            return
-        }
-        if (near && dialogueStage === 3 && currentSpeaker === MELA && !quete_boule) {
-            ftc_text_near(ELIE, "Appuyer sur 'E' pour intéragir", MELA, "mela")
-            dialogueStage = 1
-            return
-        }
-        if (near && dialogueStage === 1 && currentSpeaker === MELA  && quete_boule) {
-            ftc_text_near(ELIE, "Merci ! J'adore jongler. \nJ'ai rien pour te remercier, mais \ntu peux aller voir mon grand frère, \nil te donnera un jouet !", currentSpeaker, currentTag)
-            removeItemBySprite("/assets/boules_de_jonglage.png");
-            quete_boule_1 = true
-            point_quete_boule = false
-            dialogueStage = 2
-            if (MELA.curAnim() != "jongle_front") {
+        // à pied
+        if(!velo_monte){
+            // prendre boules
+            if (near && dialogueStage === 1 && currentSpeaker === boules_de_jonglage) {
                 destroy(boules_de_jonglage)
-                destroy(point_quete)
-                MELA.play("jongle_front")
-            }
-            return
-        }
-        if (near && dialogueStage === 2 && currentSpeaker === MELA  && quete_boule) {
-            ftc_text_near(ELIE, "Appuyer sur 'E' pour intéragir", MELA, "mela")
-            dialogueStage = 1
-        }
-
-    // dialogues melo
-        if (near && dialogueStage === 1 && currentSpeaker === MELO && !quete_boule_1) {
-            let num = getRandomInt(2) 
-            if (num === 0) {
-                ftc_text_near(ELIE, "Je t'ai rien demandé.", currentSpeaker, currentTag)
+                quete_boule = true
+                addItem("/assets/boules_de_jonglage.png")
+                return
             }
 
-            if (num === 1) {
-                ftc_text_near(ELIE, "Regarde ailleurs.", currentSpeaker, currentTag)
+            //monter velo
+            if (near && dialogueStage === 1 && currentSpeaker === velo && !savoir_velo) {
+                message("Vous ne savez pas faire de vélo",1)
+                return
             }
-            return
-        }
-        if (near && dialogueStage === 1 && currentSpeaker === MELO && quete_boule_1) {
-            ftc_text_near(ELIE, "T'as aidé ma soeur. C'est cool.", currentSpeaker, currentTag)
-            dialogueStage = 2
-            return
-        }
-        if (near && dialogueStage === 2 && currentSpeaker === MELO && quete_boule_1) {
-            ftc_text_near(ELIE, "Pourquoi tu me regardes comme ça ? \nTu veux ma photo ?", currentSpeaker, currentTag)
-            dialogueStage = 3
-            return
-        }
-        if (near && dialogueStage === 3 && currentSpeaker === MELO && quete_boule_1) {
-            ftc_text_near(ELIE, "Elle a encore promis que je donnerais un jouet ? \nBon... si t'amènes ce ballon à mon pote, \npeut-être que je t'en donne un.", currentSpeaker, currentTag)
-            dialogueStage = 4
-            if(!quete_boule_2){
-                addItem("/assets/ballon_foot_item.png")
+
+            if (near && dialogueStage === 1 && currentSpeaker === velo && savoir_velo) {
+                destroy(velo)
+                ELIE.play("velo")
+                ELIE.velo_utilise = add([
+                    sprite("velo"),
+                    pos(ELIE.pos.x + 2, ELIE.pos.y + 7),
+                    area(),
+                    anchor("bot"),
+                    "velo"
+                ]);
+                velo_monte = true
+                return
             }
-            quete_boule_2 = true
-            return
+        
+            // dialogues mela
+            if (near && dialogueStage === 1 && currentSpeaker === MELA && !quete_boule) {
+                ftc_text_near(ELIE, "Salut ! Je m'appelle Mela.\nTu pourrais me rendre \nun service s'il te plaît ?", currentSpeaker, currentTag)
+                dialogueStage = 2
+                return
+            }
+            if (near && dialogueStage === 2 && currentSpeaker === MELA && !quete_boule) {
+                ftc_text_near(ELIE, "Tu parles pas ? Ok, c'est cool. \nSi tu veux bien, tu m'apporterais les \nboules de jonglage que j'ai oubliées \nde l'autre côté de la forêt ? Merci !", currentSpeaker, currentTag)
+                dialogueStage = 3
+                point_quete_boule = false
+                return
+            }
+            if (near && dialogueStage === 3 && currentSpeaker === MELA && !quete_boule) {
+                ftc_text_near(ELIE, "Appuyer sur 'E' pour intéragir", MELA, "mela")
+                dialogueStage = 1
+                return
+            }
+            if (near && dialogueStage === 1 && currentSpeaker === MELA  && quete_boule) {
+                ftc_text_near(ELIE, "Merci ! J'adore jongler. \nJ'ai rien pour te remercier, mais \ntu peux aller voir mon grand frère, \nil te donnera un jouet !", currentSpeaker, currentTag)
+                removeItemBySprite("/assets/boules_de_jonglage.png");
+                quete_boule_1 = true
+                point_quete_boule = false
+                dialogueStage = 2
+                if (MELA.curAnim() != "jongle_front") {
+                    destroy(boules_de_jonglage)
+                    destroy(point_quete)
+                    MELA.play("jongle_front")
+                }
+                return
+            }
+            if (near && dialogueStage === 2 && currentSpeaker === MELA  && quete_boule) {
+                ftc_text_near(ELIE, "Appuyer sur 'E' pour intéragir", MELA, "mela")
+                dialogueStage = 1
+            }
+
+        // dialogues melo
+            if (near && dialogueStage === 1 && currentSpeaker === MELO && !quete_boule_1) {
+                let num = getRandomInt(2) 
+                if (num === 0) {
+                    ftc_text_near(ELIE, "Je t'ai rien demandé.", currentSpeaker, currentTag)
+                }
+
+                if (num === 1) {
+                    ftc_text_near(ELIE, "Regarde ailleurs.", currentSpeaker, currentTag)
+                }
+                return
+            }
+            if (near && dialogueStage === 1 && currentSpeaker === MELO && quete_boule_1) {
+                ftc_text_near(ELIE, "T'as aidé ma soeur. C'est cool.", currentSpeaker, currentTag)
+                dialogueStage = 2
+                return
+            }
+            if (near && dialogueStage === 2 && currentSpeaker === MELO && quete_boule_1) {
+                ftc_text_near(ELIE, "Pourquoi tu me regardes comme ça ? \nTu veux ma photo ?", currentSpeaker, currentTag)
+                dialogueStage = 3
+                return
+            }
+            if (near && dialogueStage === 3 && currentSpeaker === MELO && quete_boule_1) {
+                ftc_text_near(ELIE, "Elle a encore promis que je donnerais un jouet ? \nBon... si t'amènes ce ballon à mon pote, \npeut-être que je t'en donne un.", currentSpeaker, currentTag)
+                dialogueStage = 4
+                if(!quete_boule_2){
+                    addItem("/assets/ballon_foot_item.png")
+                }
+                quete_boule_2 = true
+                return
+            }
+            if (near && dialogueStage === 4 && currentSpeaker === MELO && quete_boule_1) {
+                ftc_text_near(ELIE, "Il a un pull gris. Et pas de cheveux.", currentSpeaker, currentTag)
+                dialogueStage = 5
+                return
+            }
+            if (near && dialogueStage === 5 && currentSpeaker === MELO && quete_boule_1) {
+                ftc_text_near(ELIE, "Appuyer sur 'E' pour intéragir", MELO, "melo")
+                dialogueStage = 1
+            }
         }
-        if (near && dialogueStage === 4 && currentSpeaker === MELO && quete_boule_1) {
-            ftc_text_near(ELIE, "Il a un pull gris. Et pas de cheveux.", currentSpeaker, currentTag)
-            dialogueStage = 5
-            return
+
+        if(velo_monte){
+            destroy(ELIE.velo_utilise)
+            velo = add([
+                pos(ELIE.pos.x,ELIE.pos.y),
+                sprite('velo'),
+                body({ isStatic: true}),
+                anchor("bot"),
+                area({
+                    shape: new Rect(vec2(0, 0), 20, 3)
+                }),
+                'velo'
+            ])
+            velo.z = velo.pos.y
+            velo_monte = false
         }
-        if (near && dialogueStage === 5 && currentSpeaker === MELO && quete_boule_1) {
-            ftc_text_near(ELIE, "Appuyer sur 'E' pour intéragir", MELO, "melo")
-            dialogueStage = 1
-        }
-  
     })
 
 // INITIALISATION DECORS
@@ -942,12 +1119,13 @@ scene("foret_1",()=>{
         boules_de_jonglage_pos_x = boules_de_jonglage.pos.x
         boules_de_jonglage_pos_y = boules_de_jonglage.pos.y
     })
+
     if(quete_boule){
         destroy(boules_de_jonglage)
     }
 
-    const velo = add([
-        pos(60,60),
+    velo = add([
+        pos(35,45),
         sprite('velo'),
         body({ isStatic: true}),
         anchor("bot"),
