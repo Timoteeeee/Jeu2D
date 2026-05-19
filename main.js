@@ -103,7 +103,16 @@ loadSprite('ballon_foot', '/assets/ballon_foot.png',{
 });
 loadSprite('plante_1', '/assets/plante_en_pot_1.png');
 loadSprite('boules_de_jonglage', '/assets/boules_de_jonglage.png');
-loadSprite('velo', '/assets/velo.png');
+loadSprite('velo', '/assets/velo.png',{
+    sliceX: 3,
+    anims: {
+        roule: {
+            from: 0,
+            to: 2,
+            speed: 5
+        }
+    }
+});
 
 // load sounds
 loadSound('bruit_pas', '/sounds/bruits_pas.mp3');
@@ -936,6 +945,19 @@ scene("foret_1",()=>{
     if(quete_boule){
         destroy(boules_de_jonglage)
     }
+
+    const velo = add([
+        pos(60,60),
+        sprite('velo'),
+        body({ isStatic: true}),
+        anchor("bot"),
+        area({
+            shape: new Rect(vec2(0, 0), 20, 3)
+        }),
+        'velo'
+    ])
+
+    velo.z = velo.pos.y
 
 // arbres et fleurs
     const arbre_1 = add([
