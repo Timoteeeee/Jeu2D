@@ -203,13 +203,59 @@ loadSprite('melo', '/assets/melo.png', {
 });
 
 loadSprite('oscar', '/assets/oscar.png', {
-    sliceX: 2,
+    sliceX: 8,
+    sliceY: 4,
     anims: {
-        idle_front: {
+        walk_side: {
             from: 0,
-            to: 1,
-            speed: 1.84,
+            to: 7,
+            speed: 10,
+            loop: true,
+        },
+        idle_side: {
+            from: 8,
+            to: 9,
+            speed: 2,
+            loop: true,
+        },
+        idle_front: {
+            from: 10,
+            to: 11,
+            speed: 2,
+            loop: true,
+        },
+        walk_front: {
+            from: 12,
+            to: 17,
+            speed: 6,
             loop: true
+        },
+        idle_behind: {
+            from: 18,
+            to: 19,
+            speed: 2,
+            loop: true
+        },
+        walk_behind: {
+            from: 20,
+            to: 25,
+            speed: 6,
+            loop: true
+        },
+        kick_side: {
+            from: 26,
+            to: 26,
+            speed: 4
+        },
+        kick_front: {
+            from: 27,
+            to: 27,
+            speed: 4
+        },
+        kick_behind: {
+            from: 21,
+            to: 21,
+            speed: 4
         }
     }
 });
@@ -230,10 +276,11 @@ let velo_monte = false
 let tuto_inventaire = false
 let score_foot = [0, 0]
 let bool_pas = false
-    const pas = play("bruit_pas", {
+const pas = play("bruit_pas", {
         volume: 0.15,
         loop: true
-    })
+})
+let tuto_deplacement = false
 
 // INVENTAIRE
 let inventoryOpen = false;
@@ -261,7 +308,7 @@ let currentSlot = 0;
 
 function addItem(spritePath){
     if(!tuto_inventaire){
-        message("Appuyer sur 'I' pour afficher votre inventaire", 2)
+        message("Appuyer sur 'I' pour afficher votre inventaire", 1)
     }
     tuto_inventaire = true
     const img = document.createElement("img");
@@ -457,6 +504,9 @@ let quete_boule_2 = false
 let quete_boule_fin = false
 let partie_foot = false
 
+// message tuto
+message("Appuyer sur 'w' 'a' 's' 'd' pour vour déplacer", 3)
+
 scene("foret_1",()=>{
     add([
         sprite('foret_1'),
@@ -466,6 +516,12 @@ scene("foret_1",()=>{
         volume: 1,
         loop: true
     })
+
+    // message tuto
+    if(!tuto_deplacement){
+        message("Utiliser 'W', 'A', 'S', 'D' pour vour déplacer", 1)
+        tuto_deplacement = true
+    }
 
     
 // INITIALISATION ET MOUVEMENTS ELIE
@@ -777,6 +833,7 @@ scene("foret_1",()=>{
             ftc_text_near(ELIE, "Merci ! J'adore jongler. \nJ'ai rien pour te remercier, mais \ntu peux aller voir mon grand frère, \nil te donnera un jouet !", currentSpeaker, currentTag)
             removeItemBySprite("/assets/boules_de_jonglage.png");
             quete_boule_1 = true
+            point_quete_boule = false
             dialogueStage = 2
             if (MELA.curAnim() != "jongle_front") {
                 destroy(boules_de_jonglage)
@@ -1799,6 +1856,7 @@ scene("terrain_foot",()=>{
         if (near && dialogueStage === 3 && currentSpeaker === OSCAR && quete_boule_2 && !partie_foot) {
             ftc_text_near(ELIE, `${pseudo}. C'est joli !\nEntraine-toi un peu avec le ballon et\nviens me voir si tu veux faire une partie.`, currentSpeaker, currentTag)
             dialogueStage = 4
+            partie_foot = true
             return
         }
 
@@ -1809,8 +1867,10 @@ scene("terrain_foot",()=>{
 
         if (near && dialogueStage === 1 && currentSpeaker === OSCAR && partie_foot) {
             ftc_text_near(ELIE, "Tu veux jouer ? C'est parti !", currentSpeaker, currentTag)
-            go("partie_foot")
-            return
+            
+            wait(3, () => {
+                    go("partie_foot")
+                })
         }
     })
 
@@ -2255,6 +2315,135 @@ scene("partie_foot",()=>{
 
     OSCAR.play("idle_front")
     
+    // IA OSCAR
+
+    let oscarSpeed = 18
+    if(score_foot[0] === 1) {
+        oscarSpeed = 22
+    }
+    if(score_foot[0] === 2) {
+        oscarSpeed = 26
+    }
+
+    const oscarKickForce = 85
+    
+    let oscarCanKick = true
+    let oscarDirection = "front"
+
+    OSCAR.onUpdate(() => {
+
+        const dirToBall = ballon_foot.pos.sub(OSCAR.pos)
+        const dist = dirToBall.len()
+
+        // déplacement vers le ballon
+        if (dist > 8) {
+
+            const moveDir = dirToBall.unit()
+
+            OSCAR.move(
+                moveDir.x * oscarSpeed,
+                moveDir.y * oscarSpeed
+            )
+
+            // animations
+            if (Math.abs(moveDir.x) > Math.abs(moveDir.y)) {
+
+                oscarDirection = "side"
+
+                if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side"){
+                    OSCAR.play("walk_side")
+                }
+                if (moveDir.x > 0) {
+                    OSCAR.flipX = true
+                } else {
+                    OSCAR.flipX = false
+                }
+
+            } else {
+
+                if (moveDir.y > 0) {
+
+                    oscarDirection = "front"
+
+                    if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side"){
+                        OSCAR.play("walk_front")
+                    }                    
+
+                } else {
+
+                    oscarDirection = "behind"
+
+                    if(ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side"){
+                        OSCAR.play("walk_behind")
+                    }
+                }
+
+            }
+
+        } else {
+
+            // animations idle
+            if (oscarDirection === "side" && ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side") {
+                OSCAR.play("idle_side")
+            }
+
+            if (oscarDirection === "front" && ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side") {
+                OSCAR.play("idle_front")
+            }
+
+            if (oscarDirection === "behind" && ELIE.curAnim() != "walk_side" && ELIE.curAnim() != "walk_front" && ELIE.curAnim() != "walk_behind" && ELIE.curAnim() != "kick_behind" && ELIE.curAnim() != "kick_front" && ELIE.curAnim() != "kick_side") {
+                OSCAR.play("idle_behind")
+            }
+
+            // tir
+            if (oscarCanKick) {
+
+                oscarCanKick = false
+
+                // animation de tir
+                if (oscarDirection === "side"){
+                    OSCAR.play("kick_side")
+                }
+
+                if (oscarDirection === "front"){
+                    OSCAR.play("kick_front")
+                }
+
+                if (oscarDirection === "behind"){
+                    OSCAR.play("kick_behind")
+                }
+
+                // vise le goal gauche
+                const target = vec2(15, 55)
+
+                const shotDir = target.sub(ballon_foot.pos).unit()
+
+                ballon_foot.vel = shotDir.scale(oscarKickForce)
+
+                ballon_foot.play("bounce")
+
+                wait(0.2, () => {
+                    if (oscarDirection === "side") {
+                        OSCAR.play("idle_side")
+                    }
+
+                    if (oscarDirection === "front") {
+                        OSCAR.play("idle_front")
+                    }
+
+                    if (oscarDirection === "behind") {
+                        OSCAR.play("idle_behind")
+                    }
+                })
+
+                wait(1, () => {
+                    oscarCanKick = true
+                })
+            }
+        }
+
+        OSCAR.z = OSCAR.pos.y
+    })
 
 // collisions
     
@@ -2298,9 +2487,17 @@ scene("partie_foot",()=>{
             })
             score_foot[1] = score_foot[1] + 1
             var_goal = true
-            wait(2.5, () => {
-                go("partie_foot")
-            })
+            if(score_foot[1] === 3){
+                message("Défaite...",2)
+                wait(3.5, () => {
+                    go("terrain_foot")
+                })
+            }
+            else {
+                wait(3.5, () => {
+                    go("partie_foot")
+                })
+            }
         }
     })
     ballon_foot.onCollide("goalll_droite", () => {
@@ -2312,9 +2509,17 @@ scene("partie_foot",()=>{
             })
             score_foot[0] = score_foot[0] + 1
             var_goal = true
-            wait(2.5, () => {
-                go("partie_foot")
-            })
+            if(score_foot[0] === 3){
+                message("Victoire !!!",2)
+                wait(3.5, () => {
+                    go("terrain_foot")
+                })
+            }
+            else {
+                wait(3.5, () => {
+                    go("partie_foot")
+                })
+            }
         }
     })
 
@@ -2613,4 +2818,4 @@ scene("ville_1",()=>{
     })
 })
 
-go("partie_foot")
+go("foret_1")
