@@ -327,6 +327,7 @@ function removeItemBySprite(spritePath){
         if(img && img.src.includes(spritePath)){
 
             slots[i].innerHTML = "";
+            currentSlot--;
             return; // stop après suppression
         }
     }
