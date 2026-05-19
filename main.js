@@ -446,7 +446,7 @@ function ftc_text_near(player, msg, speaker, tag) {
     const message1 = add([text(currentText, {
                 font: "journal"
             }),
-            pos(speaker.pos.x - 0.3, speaker.pos.y - 19.7),
+            pos(speaker.pos.x - 0.2, speaker.pos.y - 19.7),
             anchor("center"),
             color(BLACK),
             scale(0.09),
@@ -534,7 +534,7 @@ scene("foret_1",()=>{
 
     // message tuto
     if(!tuto_deplacement){
-        message("Utiliser 'W', 'A', 'S', 'D' pour vour déplacer", 1)
+        message("Utiliser 'W', 'A', 'S', 'D' pour vous déplacer", 1)
         tuto_deplacement = true
     }
 
@@ -1007,8 +1007,11 @@ scene("foret_1",()=>{
                 ELIE.velo_utilise = add([
                     sprite("velo"),
                     pos(ELIE.pos.x, ELIE.pos.y + 11),
-                    area(),
+                    body(),
                     anchor("bot"),
+                    area({
+                        shape: new Rect(vec2(0, 0), 20, 10)
+                    }),
                     "velo"
                 ]);
                 velo_monte = true
@@ -1092,8 +1095,10 @@ scene("foret_1",()=>{
             }
         }
 
+        // monter sur le velo
         if(velo_monte){
             destroy(ELIE.velo_utilise)
+            ELIE.play("idle_side")
             velo = add([
                 pos(ELIE.pos.x,ELIE.pos.y),
                 sprite('velo'),
@@ -1653,6 +1658,11 @@ scene("terrain_foot",()=>{
         ELIE.pos.y = 21
     }
 
+    if(zone_arrivee === "partie"){
+        ELIE.pos.x = 60
+        ELIE.pos.y = 60
+    }
+
     ELIE.play("idle_side")
 
 // mouvements
@@ -2153,6 +2163,8 @@ scene("partie_foot",()=>{
     add([
         sprite('terrain_foot'),
     ]);
+
+    zone_arrivee = "partie"
 
 // INITIALISATION VARIABLE SPECIFIQUE
     let var_goal = false
