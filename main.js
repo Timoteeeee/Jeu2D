@@ -4,13 +4,6 @@ import kaplay from "https://unpkg.com/kaplay@3001.0.19/dist/kaplay.mjs";
 const GAME_WIDTH = 192;
 const GAME_HEIGHT = 108;
 
-function getScale() {
-  return Math.floor(Math.min(
-    window.innerWidth / GAME_WIDTH,
-    window.innerHeight / GAME_HEIGHT
-  ));
-}
-
 kaplay({
   width: GAME_WIDTH,
   height: GAME_HEIGHT,
@@ -350,6 +343,14 @@ function removeItemBySprite(spritePath){
 }
 
 // INITIALISATION FONCTIONS
+// taille écran
+function getScale() {
+  return Math.floor(Math.min(
+    window.innerWidth / GAME_WIDTH,
+    window.innerHeight / GAME_HEIGHT
+  ));
+}
+
 // numeros aleatoires
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);
