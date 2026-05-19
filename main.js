@@ -588,6 +588,10 @@ scene("foret_1",()=>{
         if(!velo_monte){
             ELIE.play("idle_side")
         }
+
+        if(velo_monte){
+            ELIE.velo_utilise.stop()
+        }
     })
 
     onKeyDown("down", () => {
@@ -613,6 +617,10 @@ scene("foret_1",()=>{
     onKeyRelease("down", ()=>{
         if(!velo_monte){
             ELIE.play("idle_front")
+        }
+
+        if(velo_monte){
+            ELIE.velo_utilise.stop()
         }
     })
 
@@ -640,6 +648,10 @@ scene("foret_1",()=>{
         if(!velo_monte){
             ELIE.play("idle_behind")
         }
+
+        if(velo_monte){
+            ELIE.velo_utilise.stop()
+        }
     })
 
     onKeyDown("left", () => {
@@ -665,6 +677,10 @@ scene("foret_1",()=>{
     onKeyRelease("left", ()=>{
         if(!velo_monte){
             ELIE.play("idle_side")
+        }
+
+        if(velo_monte){
+            ELIE.velo_utilise.stop()
         }
     })
 
@@ -692,6 +708,10 @@ scene("foret_1",()=>{
         if(!velo_monte){
             ELIE.play("idle_side")
         }
+
+        if(velo_monte){
+            ELIE.velo_utilise.stop()
+        }
     })
 
     onKeyDown("s", () => {
@@ -717,6 +737,10 @@ scene("foret_1",()=>{
     onKeyRelease("s", ()=>{
         if(!velo_monte){
             ELIE.play("idle_front")
+        }
+
+        if(velo_monte){
+            ELIE.velo_utilise.stop()
         }
     })
 
@@ -744,6 +768,10 @@ scene("foret_1",()=>{
         if(!velo_monte){
             ELIE.play("idle_behind")
         }
+
+        if(velo_monte){
+            ELIE.velo_utilise.stop()
+        }
     })
 
     onKeyDown("a", () => {
@@ -769,6 +797,10 @@ scene("foret_1",()=>{
     onKeyRelease("a", ()=>{
         if(!velo_monte){
             ELIE.play("idle_side")
+        }
+
+        if(velo_monte){
+            ELIE.velo_utilise.stop()
         }
     })
 
@@ -861,8 +893,8 @@ scene("foret_1",()=>{
         ELIE.z = ELIE.pos.y
 
         if(ELIE.velo_utilise) {
-            ELIE.velo_utilise.pos.x = ELIE.pos.x + 2
-            ELIE.velo_utilise.pos.y = ELIE.pos.y + 8
+            ELIE.velo_utilise.pos.x = ELIE.pos.x
+            ELIE.velo_utilise.pos.y = ELIE.pos.y + 11
         }
     })
 
@@ -974,7 +1006,7 @@ scene("foret_1",()=>{
                 ELIE.play("velo")
                 ELIE.velo_utilise = add([
                     sprite("velo"),
-                    pos(ELIE.pos.x + 2, ELIE.pos.y + 7),
+                    pos(ELIE.pos.x, ELIE.pos.y + 11),
                     area(),
                     anchor("bot"),
                     "velo"
