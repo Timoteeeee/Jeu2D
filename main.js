@@ -872,8 +872,10 @@ scene("foret_1",()=>{
         if (near && dialogueStage === 3 && currentSpeaker === MELO && quete_boule_1) {
             ftc_text_near(ELIE, "Elle a encore promis que je donnerais un jouet ? \nBon... si t'amènes ce ballon à mon pote, \npeut-être que je t'en donne un.", currentSpeaker, currentTag)
             dialogueStage = 4
+            if(!quete_boule_2){
+                addItem("/assets/ballon_foot_item.png")
+            }
             quete_boule_2 = true
-            addItem("/assets/ballon_foot_item.png")
             return
         }
         if (near && dialogueStage === 4 && currentSpeaker === MELO && quete_boule_1) {
@@ -1769,6 +1771,9 @@ scene("terrain_foot",()=>{
     if(!quete_boule_fin){
         ballon_foot.opacity = 0
     }
+    if(partie_foot){
+        ballon_foot.pos.x = 60
+    }
 
 //personnages
 
@@ -1837,7 +1842,7 @@ scene("terrain_foot",()=>{
 
         if (near && dialogueStage === 1 && currentSpeaker === OSCAR && quete_boule_2 && !partie_foot) {
             ftc_text_near(ELIE, "T'as trouvé mon ballon ! Merci beaucoup...", currentSpeaker, currentTag)
-            removeItemBySprite("/assets/ballon_foot.png");
+            removeItemBySprite("/assets/ballon_foot_item.png");
             dialogueStage = 2
             quete_boule_fin = true
             ballon_foot.opacity = 1
@@ -1860,7 +1865,7 @@ scene("terrain_foot",()=>{
             return
         }
 
-        if (near && dialogueStage === 4 && currentSpeaker === OSCAR && quete_boule_2 && !partie_foot) {
+        if (near && dialogueStage === 4 && currentSpeaker === OSCAR && quete_boule_2 && partie_foot) {
             ftc_text_near(ELIE, "Appuyer sur 'E' pour intéragir", OSCAR, "oscar")
             dialogueStage = 1
         }
@@ -1931,10 +1936,6 @@ scene("partie_foot",()=>{
         body(),
         'elie'
     ]);
-    if(zone_arrivee === "droite"){
-        ELIE.pos.x = 180
-        ELIE.pos.y = 21
-    }
 
     ELIE.play("idle_side")
 
