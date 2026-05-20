@@ -1107,9 +1107,11 @@ scene("foret_1",()=>{
     ELIE.onUpdate(() => {
         ELIE.z = ELIE.pos.y
 
-        if(ELIE.velo_utilise) {
+        if(velo_monte) {
             ELIE.velo_utilise.pos.x = ELIE.pos.x
             ELIE.velo_utilise.pos.y = ELIE.pos.y + 11
+            ELIE.velo_utilise.z = ELIE.pos.y + 11
+            ELIE.z = ELIE.pos.y + 11
         }
     })
 
@@ -3420,6 +3422,8 @@ scene("ville_1",()=>{
         if(ELIE.velo_utilise) {
             ELIE.velo_utilise.pos.x = ELIE.pos.x
             ELIE.velo_utilise.pos.y = ELIE.pos.y + 11
+            ELIE.velo_utilise.z = ELIE.pos.y + 11
+            ELIE.z = ELIE.pos.y + 11
         }
     })
 
