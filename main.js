@@ -1818,10 +1818,10 @@ scene("foret_1",()=>{
     });
 
     MELA.z = MELA.pos.y
-    if(!quete_boule){
+    if(!quete_boule_1){
         MELA.play("idle_front")
     }
-    if(quete_boule){
+    if(quete_boule_1){
         MELA.play("jongle_front")
     }
     MELA.onUpdate(() => {
@@ -1858,6 +1858,9 @@ scene("terrain_foot",()=>{
     add([
         sprite('terrain_foot'),
     ]);
+
+    score_foot[0] = 0
+    score_foot[1] = 0
     
 // INITIALISATION ET MOUVEMENTS ELIE
     const ELIE = add([
@@ -2336,13 +2339,14 @@ scene("terrain_foot",()=>{
         if (near && dialogueStage === 3 && currentSpeaker === OSCAR && quete_boule_2 && !partie_foot) {
             ftc_text_near(ELIE, `${pseudo}. C'est joli !\nEntraine-toi un peu avec le ballon et\nviens me voir si tu veux faire une partie.`, currentSpeaker, currentTag)
             dialogueStage = 4
-            partie_foot = true
             return
         }
 
-        if (near && dialogueStage === 4 && currentSpeaker === OSCAR && quete_boule_2 && partie_foot) {
+        if (near && dialogueStage === 4 && currentSpeaker === OSCAR && quete_boule_2 && !partie_foot) {
             ftc_text_near(ELIE, "Appuyer sur 'E' pour intéragir", OSCAR, "oscar")
             dialogueStage = 1
+            partie_foot = true
+            return
         }
 
         if (near && dialogueStage === 1 && currentSpeaker === OSCAR && partie_foot) {
@@ -3004,7 +3008,7 @@ scene("partie_foot",()=>{
     // messages partie
     message("Trois, deux, un, C'EST PARTI !", 3)
 
-    const score_1 = add([text(`Tim: ${score_foot[0]} | Oscar: ${score_foot[1]}`, {
+    const score_1 = add([text(`${pseudo}: ${score_foot[0]} | Oscar: ${score_foot[1]}`, {
         font: "journal",
     }),
     scale(0.2),
@@ -3013,7 +3017,7 @@ scene("partie_foot",()=>{
     ])
     score_1.z = 400
 
-    const score_2 = add([text(`Tim: ${score_foot[0]} | Oscar: ${score_foot[1]}`, {
+    const score_2 = add([text(`${pseudo}: ${score_foot[0]} | Oscar: ${score_foot[1]}`, {
         font: "journal",
     }),
     scale(0.2),
@@ -3526,4 +3530,4 @@ scene("ville_1",()=>{
     })
 })
 
-go("accueil")
+go("choix")
