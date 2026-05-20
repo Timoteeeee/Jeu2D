@@ -3534,4 +3534,4 @@ scene("ville_1",()=>{
     })
 })
 
-go("choix")
+go("accueil")
